@@ -1,0 +1,292 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireTrack Pro - Connexion</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card glass-card">
+            <div class="login-header">
+                <div class="app-logo">
+                    <i class="fas fa-fire-extinguisher logo-icon"></i>
+                    <h1>FireTrack Pro</h1>
+                </div>
+                <p>Système de gestion des ventes d'extincteurs</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" placeholder="Entrez votre email" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="remember-me">
+                        <span class="checkmark"></span>
+                        Se souvenir de moi
+                    </label>
+                    <a href="{% url 'register' %}" class="forgot-password">Créer un nouveau compte ?</a>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <div class="theme-switcher">
+                    <i class="fas fa-moon"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <i class="fas fa-sun"></i>
+                </div>
+                
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="fr">FR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-features">
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Suivi des Ventes</h3>
+                <p>Gérez et suivez toutes vos ventes d'extincteurs en temps réel</p>
+            </div>
+            
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Alertes d'Expiration</h3>
+                <p>Recevez des alertes pour les extincteurs approchant de leur date d'expiration</p>
+            </div>
+            
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Rapports Complets</h3>
+                <p>Générez des rapports détaillés sur vos ventes et inventaire</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-message" id="toast-message">
+            Connexion réussie!
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const API_BASE_URL = 'http://127.0.0.1:8000';
+            
+            const themeToggle = document.getElementById('theme-toggle');
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            
+            // Apply saved theme
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.checked = true;
+            }
+            
+            // Theme toggle event
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+            
+            // Language Switching Functionality
+            const langButtons = document.querySelectorAll('.lang-btn');
+            langButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    langButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    showToast(`Langue changée en ${this.textContent}`);
+                });
+            });
+            
+            // Login Form Submission
+            const loginForm = document.getElementById('login-form');
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple validation
+                if (!email || !password) {
+                    showToast('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                // Login process
+                const loginBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = loginBtn.innerHTML;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion...';
+                loginBtn.disabled = true;
+                
+                try {
+                    // API call للدخول مع إضافة mode: 'cors'
+                    const response = await fetch(`${API_BASE_URL}/auth/login/`, {
+                        method: 'POST',
+                        mode: 'cors', // مهم لطلبات CORS
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    // التحقق من حالة الاستجابة
+                    if (!response.ok) {
+                        // محاولة قراءة رسالة الخطأ من الخادم
+                        let errorMessage = 'Erreur de connexion';
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.detail || errorMessage;
+                        } catch (e) {
+                            errorMessage = `Erreur HTTP: ${response.status}`;
+                        }
+                        throw new Error(errorMessage);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // حفظ التوكن في localStorage
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showToast('Connexion réussie!');
+                    
+                    // الانتقال إلى index.html بعد نجاح التسجيل
+                    setTimeout(() => {
+                        window.location.href = '/tableau-de-bord/';
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showToast(error.message || 'Erreur de connexion au serveur', 'error');
+                } finally {
+                    loginBtn.innerHTML = originalBtnText;
+                    loginBtn.disabled = false;
+                }
+            });
+            
+            // Toast Notification Function
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastClose = document.querySelector('.toast-close');
+            
+            function showToast(message, type = 'success') {
+                const toastIcon = toast.querySelector('.toast-icon i');
+                
+                switch(type) {
+                    case 'error':
+                        toastIcon.className = 'fas fa-times-circle';
+                        toastIcon.style.color = 'var(--danger-color)';
+                        break;
+                    case 'warning':
+                        toastIcon.className = 'fas fa-exclamation-triangle';
+                        toastIcon.style.color = 'var(--warning-color)';
+                        break;
+                    default:
+                        toastIcon.className = 'fas fa-check-circle';
+                        toastIcon.style.color = 'var(--success-color)';
+                }
+                
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            toastClose.addEventListener('click', function() {
+                toast.classList.remove('show');
+            });
+            
+            // Add some interactive effects to feature cards
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.style.boxShadow = '0 12px 40px 0 var(--shadow-color)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = '0 8px 32px 0 var(--shadow-color)';
+                });
+            });
+            
+            // Check if user is already logged in
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // Verify token is still valid
+                fetch(`${API_BASE_URL}/auth/me/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/tableau-de-bord/';
+                    } else {
+                        // إذا كان التوكن غير صالح، قم بإزالته
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('refresh_token');
+                        localStorage.removeItem('user');
+                    }
+                })
+                .catch(error => {
+                    console.error('Token verification failed:', error);
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('user');
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'js/loginjs' %}"></script>
+
+</body>
+</html>

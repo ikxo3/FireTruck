@@ -1,0 +1,304 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireTrack Pro - Gestion des ventes d'extincteurs</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* إضافة بعض الأنماط للتأكد من أن البطاقات الثلاثة تظهر بشكل متوازن */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 992px) {
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Side Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-logo">
+                    <i class="fas fa-fire-extinguisher logo-icon"></i>
+                    <h1>FireTrack Pro</h1>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active">
+                        <i class="fas fa-plus-circle nav-icon"></i>
+                        <span class="nav-text">Nouvelle Vente</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-search nav-icon"></i>
+                        <span class="nav-text">Recherche Clients</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <span class="nav-text">Ventes Aujourd'hui</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-exclamation-triangle nav-icon"></i>
+                        <span class="nav-text">Expiration Proche</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="theme-switcher">
+                    <i class="fas fa-moon"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <i class="fas fa-sun"></i>
+                </div>
+                
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="fr">FR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                
+                <button class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="date-display">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="current-date">15 Août 2025</span>
+                </div>
+                <div class="connection-status connected">
+                    <i class="fas fa-wifi"></i>
+                    <span>Connecté</span>
+                </div>
+            </div>
+            
+            <!-- Search and Filter Panel -->
+            <div class="search-panel glass-card">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher par nom, téléphone ou entreprise..." id="main-search">
+                    <button class="search-btn">Rechercher</button>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label for="date-range">Période:</label>
+                        <select id="date-range">
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Cette Semaine</option>
+                            <option value="month">Ce Mois</option>
+                            <option value="custom">Personnalisée</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="company-type">Type d'Entreprise:</label>
+                        <select id="company-type">
+                            <option value="all">Tous</option>
+                            <option value="commercial">Commerciale</option>
+                            <option value="industrial">Industrielle</option>
+                            <option value="residential">Résidentielle</option>
+                            <option value="government">Gouvernementale</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button class="apply-filters">Appliquer</button>
+                        <button class="clear-filters">Effacer</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+           <!-- في قسم الإحصائيات السريعة -->
+            <div class="quick-stats">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon sales">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Ventes Aujourd'hui</h3>
+                        <p class="stat-value">0</p> <!-- سيتم تحديث هذه القيمة -->
+                    </div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Revenu Total</h3>
+                        <p class="stat-value">0 DA</p> <!-- سيتم تحديث هذه القيمة -->
+                    </div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon expiring">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Expiration Proche</h3>
+                        <p class="stat-value">0</p> <!-- سيتم تحديث هذه القيمة -->
+                    </div>
+                </div>
+            </div>
+            <!-- Sales Table -->
+            <div class="sales-table-container glass-card">
+                <div class="table-header">
+                    <h2>Historique des Ventes</h2>
+                    <button class="add-sale-btn" id="add-sale-btn">
+                        <i class="fas fa-plus"></i> Ajouter Vente
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Téléphone</th>
+                                <th>Entreprise</th>
+                                <th>Type</th>
+                                <th>Taille</th>
+                                <th>Qté</th>
+                                <th>Prix (DA)</th>
+                                <th>Expiration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="table-footer">
+                    <div class="pagination">
+                        <button class="page-btn disabled"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-number">1</span>
+                        <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="total-records">
+                        Total: 3 enregistrements
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Add/Edit Sale Modal -->
+    <div class="modal-overlay" id="sale-modal">
+        <div class="modal-container glass-card">
+            <div class="modal-header">
+                <h2 id="modal-title">Ajouter Nouvelle Vente</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            
+            <form id="sale-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer-name">Nom du Client *</label>
+                        <input type="text" id="customer-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-phone">Téléphone *</label>
+                        <input type="tel" id="customer-phone" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company">Entreprise</label>
+                        <input type="text" id="company">
+                    </div>
+                    <div class="form-group">
+                        <label for="extinguisher-type">Type d'Extincteur *</label>
+                        <select id="extinguisher-type" required>
+                            <option value="">Sélectionner</option>
+                            <option value="poudre">Poudre</option>
+                            <option value="co2">CO2</option>
+                            <option value="mousse">Mousse</option>
+                            <option value="eau">Eau</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="extinguisher-size">Taille *</label>
+                        <select id="extinguisher-size" required>
+                            <option value="">Sélectionner</option>
+                            <option value="1kg">1kg</option>
+                            <option value="2kg">2kg</option>
+                            <option value="5kg">5kg</option>
+                            <option value="6kg">6kg</option>
+                            <option value="9kg">9kg</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantité *</label>
+                        <input type="number" id="quantity" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Prix Unitaire (DA) *</label>
+                        <input type="number" id="price" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expiry-date">Date d'Expiration *</label>
+                        <input type="date" id="expiry-date" required>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Annuler</button>
+                    <button type="submit" class="save-btn">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-message">
+            Vente enregistrée avec succès!
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+    
+      <script src="{% static 'js/script.js' %}"></script>
+
+</body>
+</html>
